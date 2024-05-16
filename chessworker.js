@@ -1,22 +1,18 @@
-// chessWorker.js
-
-self.onmessage = function(event) {
+onmessage = function(event) {
     const { board, depth, isMaximizingPlayer } = event.data;
-
     const bestMove = minimax(board, depth, isMaximizingPlayer, -Infinity, Infinity);
-    self.postMessage(bestMove);
+    postMessage(bestMove);
 };
 
-function minimax(board, depth, isMaximizingPlayer, alpha, beta) {
+function minimax(board, depth, isMaximizing, alpha, beta) {
     if (depth === 0) {
         return { score: evaluateBoard(board) };
     }
 
-    const moves = getAllPossibleMoves(board, isMaximizingPlayer);
-    orderMoves(moves);
+    const moves = getAllPossibleMoves(board, isMaximizing);
     let bestMove = null;
 
-    if (isMaximizingPlayer) {
+    if (isMaximizing) {
         let maxEval = -Infinity;
         for (const move of moves) {
             const boardCopy = JSON.parse(JSON.stringify(board));
@@ -51,33 +47,22 @@ function minimax(board, depth, isMaximizingPlayer, alpha, beta) {
     }
 }
 
+function movePieceOnBoard(board, fromRow, fromCol, toRow, toCol) {
+    const piece = board[fromRow][fromCol];
+    board[fromRow][fromCol] = ' ';
+    board[toRow][toCol] = piece;
+}
+
 function evaluateBoard(board) {
     const pieceValues = {
         'p': -1, 'n': -3, 'b': -3, 'r': -5, 'q': -9, 'k': -900,
         'P': 1, 'N': 3, 'B': 3, 'R': 5, 'Q': 9, 'K': 900
     };
-    const pieceSquareTables = {
-        'P': [/* piece-square table values for white pawn */],
-        'N': [/* piece-square table values for white knight */],
-        'B': [/* piece-square table values for white bishop */],
-        'R': [/* piece-square table values for white rook */],
-        'Q': [/* piece-square table values for white queen */],
-        'K': [/* piece-square table values for white king */],
-        'p': [/* piece-square table values for black pawn */],
-        'n': [/* piece-square table values for black knight */],
-        'b': [/* piece-square table values for black bishop */],
-        'r': [/* piece-square table values for black rook */],
-        'q': [/* piece-square table values for black queen */],
-        'k': [/* piece-square table values for black king */],
-    };
     let evaluation = 0;
-    for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-            const piece = board[row][col];
-            if (piece !== ' ') {
-                const pieceValue = pieceValues[piece] || 0;
-                const pieceSquareValue = pieceSquareTables[piece][row * 8 + col] || 0;
-                evaluation += pieceValue + pieceSquareValue;
+    for (const row of board) {
+        for (const cell of row) {
+            if (cell !== ' ') {
+                evaluation += pieceValues[cell] || 0;
             }
         }
     }
@@ -109,12 +94,6 @@ function getAllPossibleMoves(board, isWhite) {
 
 function isWhitePiece(piece) {
     return piece === piece.toUpperCase();
-}
-
-function movePieceOnBoard(board, fromRow, fromCol, toRow, toCol) {
-    const piece = board[fromRow][fromCol];
-    board[fromRow][fromCol] = ' ';
-    board[toRow][toCol] = piece;
 }
 
 function causesCheck(board, fromRow, fromCol, toRow, toCol, isWhite) {
@@ -224,3 +203,4 @@ function getPossibleMovesNoCheck(board, row, col, piece) {
     }
     return moves;
 }
+
