@@ -203,4 +203,3 @@ function getPossibleMovesNoCheck(board, row, col, piece) {
     }
     return moves;
 }
-
